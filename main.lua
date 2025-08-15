@@ -1,37 +1,42 @@
 function love.load()
     lume = require "lume"
     require "savefile"
+    background = love.graphics.newImage("images/background.png")
+    modifier_frame = love.graphics.newImage("images/modifier_frame.png")
+    modifier_A = love.graphics.newImage("images/modifier_A.png")
+    modifier_B = love.graphics.newImage("images/modifier_B.png")
+    modifier_C = love.graphics.newImage("images/modifier_C.png")
+    modifier_D = love.graphics.newImage("images/modifier_D.png")
+    modifier_E = love.graphics.newImage("images/modifier_E.png")
+    modifier_F = love.graphics.newImage("images/modifier_F.png")
+    modifier_G = love.graphics.newImage("images/modifier_G.png")
+    modifier_H = love.graphics.newImage("images/modifier_H.png")
     require "modifiers"
-    background = love.graphics.newImage("background.png")
-    modifier_frame = love.graphics.newImage("modifier_frame.png")
-    modifier_A = love.graphics.newImage("modifier_A.png")
-    modifier_B = love.graphics.newImage("modifier_B.png")
-    modifier_C = love.graphics.newImage("modifier_C.png")
-    modifier_D = love.graphics.newImage("modifier_D.png")
-    kronoButtons = {}
-    createKronoButton({520, 10}, 1, 15, 0, 0) -- 0.0(6) Krono/s
-    createKronoButton({520, 50}, 6, 45, 0, 2) -- 0.1(3) Krono/s
-    createKronoButton({520, 90}, 30, 100, 0, 5) -- 0.3 Krono/s
-    createKronoButton({520, 130}, 264, 480, 0, 12) -- 0.55 Krono/s
-    createKronoButton({520, 170}, 1168, 1320, 0, 20) -- 0.8(84) Krono/s
-    Exo2_12R = love.graphics.newFont("Exo2-Regular.ttf", 12)
-    Exo2_12M = love.graphics.newFont("Exo2-Medium.ttf", 12)
-    Exo2_14R = love.graphics.newFont("Exo2-Regular.ttf", 14)
-    Exo2_16R = love.graphics.newFont("Exo2-Regular.ttf", 16)
-    Exo2_16M = love.graphics.newFont("Exo2-Medium.ttf", 16)
-    Exo2_16S = love.graphics.newFont("Exo2-SemiBold.ttf", 16)
-    Exo2_18R = love.graphics.newFont("Exo2-Regular.ttf", 18)
-    Exo2_24M = love.graphics.newFont("Exo2-Medium.ttf", 24)
-    Exo2_32M = love.graphics.newFont("Exo2-Medium.ttf", 32)
-    FiraMono_12M = love.graphics.newFont("FiraMono-Medium.ttf", 12)
-    FiraMono_14M = love.graphics.newFont("FiraMono-Medium.ttf", 14)
-    FiraMono_32M = love.graphics.newFont("FiraMono-Medium.ttf", 32)
+    Exo2_12R = love.graphics.newFont("fonts/Exo2-Regular.ttf", 12)
+    Exo2_12M = love.graphics.newFont("fonts/Exo2-Medium.ttf", 12)
+    Exo2_14R = love.graphics.newFont("fonts/Exo2-Regular.ttf", 14)
+    Exo2_16R = love.graphics.newFont("fonts/Exo2-Regular.ttf", 16)
+    Exo2_16M = love.graphics.newFont("fonts/Exo2-Medium.ttf", 16)
+    Exo2_16S = love.graphics.newFont("fonts/Exo2-SemiBold.ttf", 16)
+    Exo2_18R = love.graphics.newFont("fonts/Exo2-Regular.ttf", 18)
+    Exo2_20M = love.graphics.newFont("fonts/Exo2-Medium.ttf", 20)
+    Exo2_24M = love.graphics.newFont("fonts/Exo2-Medium.ttf", 24)
+    Exo2_32M = love.graphics.newFont("fonts/Exo2-Medium.ttf", 32)
+    FiraMono_12M = love.graphics.newFont("fonts/FiraMono-Medium.ttf", 12)
+    FiraMono_14M = love.graphics.newFont("fonts/FiraMono-Medium.ttf", 14)
+    FiraMono_32M = love.graphics.newFont("fonts/FiraMono-Medium.ttf", 32)
     rankRequirements = {}
-    for i=1,30,1 do
+    for i=1,50,1 do
         table.insert(rankRequirements, 2+2*i*(i-1))
     end
     table.insert(rankRequirements, math.huge)
     savefile.read()
+    kronoButtons = {}
+    createKronoButton({520, 10}, 1, 15, player.kronoButtonsCooldowns[1], 0) -- 0.0(6) Krono/s
+    createKronoButton({520, 50}, 6, 45, player.kronoButtonsCooldowns[2], 2) -- 0.1(3) Krono/s
+    createKronoButton({520, 90}, 30, 100, player.kronoButtonsCooldowns[3], 5) -- 0.3 Krono/s
+    createKronoButton({520, 130}, 264, 480, player.kronoButtonsCooldowns[4], 12) -- 0.55 Krono/s
+    createKronoButton({520, 170}, 1168, 1320, player.kronoButtonsCooldowns[5], 20) -- 0.8(84) Krono/s
     updateModifierBoosts()
 end
 
@@ -88,9 +93,8 @@ function createKronoButton(position, kronoGain, cooldown, cooldownTimer, unlockR
 end
 
 function love.graphics.setHexColor(hex)
-	local str = hex:gsub('0[xX]','') -- get rid of hex prefix if it exists
-	local val = tonumber(str, 16) -- base 16 number conversion
-	-- from here, same as above
+	local str = hex:gsub('0[xX]','')
+	local val = tonumber(str, 16)
 	local bit = require('bit')
 	local r = bit.rshift(bit.band(val, 0xff0000), 16) / 255
 	local g = bit.rshift(bit.band(val, 0xff00), 8) / 255
@@ -112,13 +116,13 @@ function love.draw()
             love.graphics.setHexColor("ffffff")
             local textY = math.floor((v.position[2] + 14) - (Exo2_16M:getHeight("Collect " .. v.kronoGain .. " Krono") / 2))
             if v.cooldownTimer <= 0 then
-                love.graphics.printf("Collect " .. v.kronoGain * player.modifier.boosts.kronoGain .. ((v.kronoGain > 1) and " Kronoe" or " Krono"), v.position[1], textY, 240, "center")
+                love.graphics.printf("Collect " .. math.floor(v.kronoGain * player.modifier.boosts.kronoGain * 10) / 10 .. ((math.floor(v.kronoGain * player.modifier.boosts.kronoGain * 10) / 10 > 1) and " Kronoe" or " Krono"), v.position[1], textY, 240, "center")
             else
                 love.graphics.printf("Check back in " .. math.pfloor(v.cooldownTimer, 1) .. " seconds", v.position[1], textY, 240, "center")
             end
         else
             love.graphics.setHexColor("ffffff")
-            love.graphics.printf("Next button unlocks at Rank" .. v.unlockRank, 520, v.position[2], 240, "center")
+            love.graphics.printf("Next button unlocks at Rank " .. v.unlockRank, 520, v.position[2], 240, "center")
         end
     end
     love.graphics.setFont(Exo2_16R)
@@ -157,12 +161,12 @@ function love.draw()
             nonEmptyModifierSlots = nonEmptyModifierSlots + 1
         end
     end
-    love.graphics.setFont(Exo2_24M)
-    love.graphics.printf("Active: " .. nonEmptyModifierSlots .. "/" .. #player.modifierSlots, 926, 5, 240, "center")
-    if player.rank >= -1 then
-        local nameColor = "ffffff"
+    if player.rank >= 11 then
+        love.graphics.setFont(Exo2_20M)
+        love.graphics.printf("Active: " .. nonEmptyModifierSlots .. "/" .. #player.modifierSlots, 926, 8, 240, "center")
         for i,v in pairs(player.modifierSlots) do
-            if v.name and v.name:sub(1, 1) == "D" then
+            local nameColor = "ffffff"
+            if v.name and v.name:sub(1, 1) == "D" or v.name and v.name:sub(1, 1) == "H" then
                 nameColor = "000000"
             end
             if v.name then
@@ -170,51 +174,51 @@ function love.draw()
                 love.graphics.setHexColor(nameColor)
                 love.graphics.setFont(FiraMono_12M)
                 love.graphics.print(v.name, 920 + i * 62, 44)
-                love.graphics.setHexColor("ffffff")
             end
+            love.graphics.setHexColor("ffffff")
             love.graphics.draw(modifier_frame, 896 + i * 62, 40)
         end
+        love.graphics.setLineStyle("smooth")
+        love.graphics.setLineWidth(2)
+        love.graphics.setHexColor("ff7100")
+        love.graphics.rectangle("fill", 926, 120, 240, 50, 3, 3)
+        love.graphics.setHexColor("ffffff")
+        love.graphics.rectangle("line", 926, 120, 240, 50, 3, 3)
+        love.graphics.setFont(Exo2_12M)
+        love.graphics.setHexColor("000000")
+        love.graphics.printf("Start assembling a random modifier\n\nCosts " .. math.ceil(90 * player.modifier.boosts.assemblyCost) .. " Krono and takes " .. math.ceil(240 * player.modifier.boosts.assemblyCooldown) .. "s", 926, 123, 240, "center")
+        love.graphics.setColor(255/255, 113/255, 0/255, 96/255)
+        love.graphics.rectangle("fill", 926, 173, 240, 10)
+        love.graphics.setHexColor("8cd500")
+        love.graphics.rectangle("fill", 1166 - math.floor(240 - player.modifier.assemblyCooldown), 173, 240 - math.ceil(240 * (player.modifier.assemblyCooldown / 240)), 10)
     end
-    love.graphics.setLineStyle("smooth")
-    love.graphics.setLineWidth(2)
-    love.graphics.setHexColor("ff7100")
-    love.graphics.rectangle("fill", 926, 120, 240, 50, 3, 3)
-    love.graphics.setHexColor("ffffff")
-    love.graphics.rectangle("line", 926, 120, 240, 50, 3, 3)
-    love.graphics.setFont(Exo2_12M)
-    love.graphics.setHexColor("000000")
-    love.graphics.printf("Start assembling a random modifier\n\nCosts " .. 90 * player.modifier.boosts.assemblyCost .. " Krono and takes " .. 240 * player.modifier.boosts.assemblyCooldown .. "s", 926, 123, 240, "center")
-    love.graphics.setColor(255/255, 113/255, 0/255, 96/255)
-    love.graphics.rectangle("fill", 926, 173, 240, 10)
-    love.graphics.setHexColor("8cd500")
-    love.graphics.rectangle("fill", 1166 - math.floor(240 - player.modifier.assemblyCooldown), 173, 240 - math.ceil(240 * (player.modifier.assemblyCooldown / 240)), 10)
 
     if player.menu.modifierDrawn then
-        love.graphics.setColor(0/255, 0/255, 0/255, 128/255)
+        love.graphics.setColor(0/255, 0/255, 0/255, 170/255)
         love.graphics.rectangle("fill", 0, 0, 1280, 720)
         love.graphics.setHexColor("ffffff")
         love.graphics.setFont(Exo2_32M)
         love.graphics.printf("Modifier drawn!", 0, 150, 1280, "center")
         love.graphics.setFont(FiraMono_32M)
         love.graphics.draw(player.modifier.lastDrawn.image, 482, 200)
-        if player.modifier.lastDrawn.name:sub(1, 1) == "D" then
+        if player.modifier.lastDrawn.name:sub(1, 1) == "D" or player.modifier.lastDrawn.name:sub(1, 1) == "H" then
             love.graphics.setHexColor("000000")
         end
         love.graphics.print(player.modifier.lastDrawn.name, 547, 200)
         love.graphics.setHexColor("ffffff")
-        love.graphics.line(655, 325, 655, 200, 775, 200)
+        love.graphics.line(670, 327, 670, 201, 797, 201)
         love.graphics.setFont(Exo2_16M)
         local i = 0
         for key,value in pairs(player.modifier.lastDrawn.boosts) do
             i = i + 1
             if key == "kronoGainBoost" then
-                love.graphics.printf(string.format("+%d%% Krono", (value - 1) * 100), 660, 170 + i * 30, 400, "left")
+                love.graphics.printf(string.format("+%.2f%% Krono", (value - 1) * 100), 675, 182 + i * 20, 400, "left")
             elseif key == "kronoCooldownReduction" then
-                love.graphics.printf(string.format("-%d%% Krono button cooldown", value * 100), 660, 170 + i * 30, 400, "left")
+                love.graphics.printf(string.format("-%.2f%% Krono button cooldown", value * 100), 675, 182 + i * 20, 400, "left")
             elseif key == "assemblyCostReduction" then
-                love.graphics.printf(string.format("-%d%% Assembly cost", value * 100), 660, 170 + i * 30, 400, "left")
+                love.graphics.printf(string.format("-%.2f%% Assembly cost", value * 100), 675, 182 + i * 20, 400, "left")
             elseif key == "assemblyCooldownReduction" then
-                love.graphics.printf(string.format("+%d%% Assembly cooldown", value * 100), 660, 170 + i * 30, 400, "left")
+                love.graphics.printf(string.format("-%.2f%% Assembly cooldown", value * 100), 675, 182 + i * 20, 400, "left")
             end
         end
         local totalModifierWeight = 0
@@ -222,26 +226,33 @@ function love.draw()
             totalModifierWeight = totalModifierWeight + v.weight
         end
         love.graphics.setFont(Exo2_12R)
-        love.graphics.printf("Obtainment rate: " .. (player.modifier.lastDrawn.weight / totalModifierWeight) * 100 .. "%", 660, 310, 400, "left")
+        love.graphics.printf("Obtainment rate: " .. string.format("%.3f", (player.modifier.lastDrawn.weight / totalModifierWeight) * 100) .. "%", 675, 314, 400, "left")
         love.graphics.setFont(Exo2_18R)
-        love.graphics.printf("Choose a slot to equip this modifier...", 440, 350, 400, "center")
+        love.graphics.printf("Choose a slot to equip this modifier...", 440, 337, 400, "center")
+        local nameColor = "ffffff"
         for i,v in pairs(player.modifierSlots) do
-            if v.name ~= nil then
-                love.graphics.draw(v.image, 490 + i * 62, 380, 0, 48/128)
+            if v.name and v.name:sub(1, 1) == "D" or v.name and v.name:sub(1, 1) == "H" then
+                nameColor = "000000"
             end
-            love.graphics.draw(modifier_frame, 488 + i * 62, 380)
+            if v.name then
+                love.graphics.draw(v.image, 490 + i * 62, 365, 0, 48/128)
+                love.graphics.setHexColor(nameColor)
+                love.graphics.setFont(FiraMono_12M)
+                love.graphics.print(v.name, 512 + i * 62, 367)
+                love.graphics.setHexColor("ffffff")
+            end
+            love.graphics.draw(modifier_frame, 488 + i * 62, 363)
         end
         love.graphics.setLineStyle("smooth")
         love.graphics.setLineWidth(2)
-        love.graphics.setFont(FiraMono_14M)
         love.graphics.setHexColor("ff007a")
-        love.graphics.rectangle("fill", 520, 480, 240, 28, 3, 3)
+        love.graphics.rectangle("fill", 520, 450, 240, 28, 3, 3)
         love.graphics.setHexColor("ffffff")
-        love.graphics.rectangle("line", 520, 480, 240, 28, 3, 3)
+        love.graphics.rectangle("line", 520, 450, 240, 28, 3, 3)
         love.graphics.setFont(Exo2_16R)
-        love.graphics.printf("Discard", 520, 483, 240, "center")
-        love.graphics.setFont(Exo2_14R)
-        love.graphics.printf("Discarded modifiers can't be restored", 440, 510, 400, "center")
+        love.graphics.printf("Discard", 520, 453, 240, "center")
+        love.graphics.setFont(Exo2_12R)
+        love.graphics.printf("Discarded modifiers can't be restored", 440, 480, 400, "center")
     end
     love.graphics.setHexColor("ffffff")
 end
@@ -261,7 +272,7 @@ end
 
 function love.mousepressed(x, y, button)
     for _,v in pairs(kronoButtons) do
-        if x >= v.position[1] and x <= v.position[1] + 240 and y >= v.position[2] and y <= v.position[2] + 28 and v.cooldownTimer <= 0 and player.rank >= v.unlockRank then
+        if x >= v.position[1] and x <= v.position[1] + 240 and y >= v.position[2] and y <= v.position[2] + 28 and v.cooldownTimer <= 0 and player.rank >= v.unlockRank and not player.menu.modifierDrawn then
             player.krono = player.krono + v.kronoGain * player.modifier.boosts.kronoGain
             v.cooldownTimer = v.cooldown * player.modifier.boosts.kronoCooldown
             if player.krono >= rankRequirements[player.rank + 1] then
@@ -276,26 +287,32 @@ function love.mousepressed(x, y, button)
             player.modifier.openOnNextClick = false
             player.modifier.lastDrawn = dropTable.draw(modifiers)
         else
-            player.krono = player.krono - 90 * player.modifier.boosts.assemblyCost
+            player.krono = player.krono - math.ceil(90 * player.modifier.boosts.assemblyCost)
             player.modifier.openOnNextClick = true
             if player.krono < 0 then
                 player.rank = player.rank - 1
                 player.krono = rankRequirements[player.rank + 1] + player.krono
             end
-            player.modifier.assemblyCooldown = 240 * player.modifier.boosts.assemblyCooldown
+            player.modifier.assemblyCooldown = math.ceil(240 * player.modifier.boosts.assemblyCooldown)
         end
     end
     if player.menu.modifierDrawn then
         for i,v in ipairs(player.modifierSlots) do
-            if x >= 490 + i * 62 and x <= 542 + i * 62 and y >= 380 and y <= 432 then
+            if x >= 490 + i * 62 and x <= 542 + i * 62 and y >= 363 and y <= 415 then
                 player.modifierSlots[i] = player.modifier.lastDrawn
                 player.menu.modifierDrawn = false
                 updateModifierBoosts()
             end
         end
-        if x >= 520 and x <= 760 and y >= 480 and y <= 508 then
+        if x >= 520 and x <= 760 and y >= 450 and y <= 478 then
             player.menu.modifierDrawn = false
         end
+    end
+end
+
+function love.keypressed(key)
+    if key == "escape" and player.menu.modifierDrawn then
+        player.menu.modifierDrawn = false
     end
 end
 

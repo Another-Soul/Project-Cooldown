@@ -6,6 +6,7 @@ function savefile.read()
         data = lume.deserialize(file)
 
         player.krono = data.krono
+        player.kronoButtonsCooldowns = data.kronoButtonsCooldowns or {0, 0, 0, 0, 0}
         player.rank = data.rank
         player.modifierSlots = data.modifierSlots
         player.modifier = {}
@@ -16,6 +17,7 @@ function savefile.read()
         }
     else
         player.krono = 0
+        player.kronoButtonsCooldowns = {0, 0, 0, 0, 0}
         player.rank = 0
         player.modifierSlots = {
             {}, {}, {}
@@ -32,6 +34,10 @@ end
 function savefile.write()
     data = {}
     data.krono = player.krono
+    data.kronoButtonsCooldowns = {}
+    for i,v in ipairs(kronoButtons) do
+        table.insert(data.kronoButtonsCooldowns, v.cooldownTimer)
+    end
     data.rank = player.rank
     data.modifierSlots = player.modifierSlots
     data.modifier = {}
