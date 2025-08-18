@@ -5,16 +5,17 @@ function savefile.read()
         file = love.filesystem.read("SAVEFILE.sav")
         data = lume.deserialize(file)
 
-        player.krono = data.krono
+        player.krono = data.krono or 0
         player.kronoButtonsCooldowns = data.kronoButtonsCooldowns or {0, 0, 0, 0, 0}
-        player.rank = data.rank
-        player.modifierSlots = data.modifierSlots
+        player.rank = data.rank or 0
+        player.modifierSlots = data.modifierSlots or {{}, {}, {}}
         player.modifier = {}
-        player.modifier.assemblyCooldown = data.modifier.assemblyCooldown
-        player.modifier.openOnNextClick = data.modifier.openOnNextClick
+        player.modifier.assemblyCooldown = data.modifier.assemblyCooldown or 0
+        player.modifier.openOnNextClick = data.modifier.openOnNextClick or false
         player.menu = {
             modifierDrawn = false
         }
+        player.theme = data.theme or "sunset"
     else
         player.krono = 0
         player.kronoButtonsCooldowns = {0, 0, 0, 0, 0}
@@ -28,6 +29,7 @@ function savefile.read()
         player.menu = {
             modifierDrawn = false
         }
+        player.theme = "sunset"
     end
 end
 
@@ -43,6 +45,7 @@ function savefile.write()
     data.modifier = {}
     data.modifier.assemblyCooldown = player.modifier.assemblyCooldown
     data.modifier.openOnNextClick = player.modifier.openOnNextClick
+    data.theme = player.theme
     serialized = lume.serialize(data)
     love.filesystem.write("SAVEFILE.sav", serialized)
 end

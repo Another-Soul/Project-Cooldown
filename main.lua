@@ -1,8 +1,7 @@
 function love.load()
-    lume = require "lume"
-    require "savefile"
-    background = love.graphics.newImage("images/background.png")
     modifier_frame = love.graphics.newImage("images/modifier_frame.png")
+    modifier_frame_neon = love.graphics.newImage("images/modifier_frame_neon.png")
+    modifier_frame_basalt = love.graphics.newImage("images/modifier_frame_basalt.png")
     modifier_A = love.graphics.newImage("images/modifier_A.png")
     modifier_B = love.graphics.newImage("images/modifier_B.png")
     modifier_C = love.graphics.newImage("images/modifier_C.png")
@@ -11,7 +10,6 @@ function love.load()
     modifier_F = love.graphics.newImage("images/modifier_F.png")
     modifier_G = love.graphics.newImage("images/modifier_G.png")
     modifier_H = love.graphics.newImage("images/modifier_H.png")
-    require "modifiers"
     Exo2_12R = love.graphics.newFont("fonts/Exo2-Regular.ttf", 12)
     Exo2_12M = love.graphics.newFont("fonts/Exo2-Medium.ttf", 12)
     Exo2_14R = love.graphics.newFont("fonts/Exo2-Regular.ttf", 14)
@@ -30,13 +28,18 @@ function love.load()
         table.insert(rankRequirements, 2+2*i*(i-1))
     end
     table.insert(rankRequirements, math.huge)
+    lume = require "lume"
+    require "savefile"
     savefile.read()
+    require "themes"
+    themes.set("basalt")
     kronoButtons = {}
     createKronoButton({520, 10}, 1, 15, player.kronoButtonsCooldowns[1], 0) -- 0.0(6) Krono/s
     createKronoButton({520, 50}, 6, 45, player.kronoButtonsCooldowns[2], 2) -- 0.1(3) Krono/s
     createKronoButton({520, 90}, 30, 100, player.kronoButtonsCooldowns[3], 5) -- 0.3 Krono/s
     createKronoButton({520, 130}, 264, 480, player.kronoButtonsCooldowns[4], 12) -- 0.55 Krono/s
     createKronoButton({520, 170}, 1168, 1320, player.kronoButtonsCooldowns[5], 20) -- 0.8(84) Krono/s
+    require "modifiers"
     updateModifierBoosts()
 end
 
@@ -92,26 +95,27 @@ function createKronoButton(position, kronoGain, cooldown, cooldownTimer, unlockR
     table.insert(kronoButtons, _)
 end
 
-function love.graphics.setHexColor(hex)
+function love.graphics.setHexColor(hex, alpha)
 	local str = hex:gsub('0[xX]','')
 	local val = tonumber(str, 16)
 	local bit = require('bit')
 	local r = bit.rshift(bit.band(val, 0xff0000), 16) / 255
 	local g = bit.rshift(bit.band(val, 0xff00), 8) / 255
 	local b = bit.band(val, 0xff) / 255
-	return love.graphics.setColor(r, g, b)
+    local a = alpha or 1
+	return love.graphics.setColor(r, g, b, a)
 end
 
 function love.draw()
-    love.graphics.draw(background)
+    love.graphics.draw(themeColors[player.theme].background)
     for _,v in pairs(kronoButtons) do
         if player.rank >= v.unlockRank then
             love.graphics.setLineStyle("smooth")
             love.graphics.setLineWidth(2)
             love.graphics.setFont(FiraMono_14M)
-            love.graphics.setHexColor("ff007a")
+            love.graphics.setHexColor(themeColors[player.theme].kronoButtonFill)
             love.graphics.rectangle("fill", v.position[1], v.position[2], 240, 28, 3, 3)
-            love.graphics.setHexColor("40001e")
+            love.graphics.setHexColor(themeColors[player.theme].kronoButtonOutline)
             love.graphics.rectangle("line", v.position[1], v.position[2], 240, 28, 3, 3)
             love.graphics.setHexColor("ffffff")
             local textY = math.floor((v.position[2] + 14) - (Exo2_16M:getHeight("Collect " .. v.kronoGain .. " Krono") / 2))
@@ -126,13 +130,13 @@ function love.draw()
         end
     end
     love.graphics.setFont(Exo2_16R)
-    love.graphics.setHexColor("ff6a80")
+    love.graphics.setHexColor(themeColors[player.theme].bottomStatusBar)
     love.graphics.rectangle("fill", 440, 640, 400, 85, 4, 4)
     love.graphics.setHexColor("ffffff")
     love.graphics.rectangle("line", 440, 640, 400, 85, 4, 4)
-    love.graphics.setColor(185/255, 225/255, 69/255, 128/255)
+    love.graphics.setHexColor(themeColors[player.theme].kronoProgressBar, 128/255)
     love.graphics.rectangle("fill", 445, 649, 390, 20, 2, 2)
-    love.graphics.setHexColor("b9e145")
+    love.graphics.setHexColor(themeColors[player.theme].kronoProgressBar)
     local progressRounding = (math.floor(390 * (player.krono / rankRequirements[player.rank + 1])) > 6) and 3 or 0
     love.graphics.rectangle("fill", 445, 649, math.floor(390 * (player.krono / rankRequirements[player.rank + 1])), 20, progressRounding, progressRounding)
     love.graphics.setHexColor("ffffff")
@@ -141,7 +145,7 @@ function love.draw()
     love.graphics.line(835, 645, 835, 673)
     love.graphics.setHexColor("000000")
     love.graphics.printf("Krono: " .. string.format("%d", player.krono) .. "/" .. string.format("%d", rankRequirements[player.rank + 1]), 445, 648, 390, "center")
-    love.graphics.setHexColor("2ab2d3")
+    love.graphics.setHexColor(themeColors[player.theme].rankProgressBar)
     love.graphics.rectangle("fill", 445, 692, 390, 20, 2, 2)
     love.graphics.setHexColor("ffba5e")
     love.graphics.setLineWidth(3)
@@ -176,16 +180,16 @@ function love.draw()
                 love.graphics.print(v.name, 920 + i * 62, 44)
             end
             love.graphics.setHexColor("ffffff")
-            love.graphics.draw(modifier_frame, 896 + i * 62, 40)
+            love.graphics.draw(themeColors[player.theme].modifierFrame, 896 + i * 62, 40)
         end
         love.graphics.setLineStyle("smooth")
         love.graphics.setLineWidth(2)
-        love.graphics.setHexColor("ff7100")
+        love.graphics.setHexColor(themeColors[player.theme].assemblyButton)
         love.graphics.rectangle("fill", 926, 120, 240, 50, 3, 3)
         love.graphics.setHexColor("ffffff")
         love.graphics.rectangle("line", 926, 120, 240, 50, 3, 3)
         love.graphics.setFont(Exo2_12M)
-        love.graphics.setHexColor("000000")
+        love.graphics.setHexColor(themeColors[player.theme].assemblyButtonText)
         love.graphics.printf("Start assembling a random modifier\n\nCosts " .. math.ceil(90 * player.modifier.boosts.assemblyCost) .. " Krono and takes " .. math.ceil(240 * player.modifier.boosts.assemblyCooldown) .. "s", 926, 123, 240, "center")
         love.graphics.setColor(255/255, 113/255, 0/255, 96/255)
         love.graphics.rectangle("fill", 926, 173, 240, 10)
@@ -241,11 +245,11 @@ function love.draw()
                 love.graphics.print(v.name, 512 + i * 62, 367)
                 love.graphics.setHexColor("ffffff")
             end
-            love.graphics.draw(modifier_frame, 488 + i * 62, 363)
+            love.graphics.draw(themeColors[player.theme].modifierFrame, 488 + i * 62, 363)
         end
         love.graphics.setLineStyle("smooth")
         love.graphics.setLineWidth(2)
-        love.graphics.setHexColor("ff007a")
+        love.graphics.setHexColor(themeColors[player.theme].discardButton)
         love.graphics.rectangle("fill", 520, 450, 240, 28, 3, 3)
         love.graphics.setHexColor("ffffff")
         love.graphics.rectangle("line", 520, 450, 240, 28, 3, 3)
