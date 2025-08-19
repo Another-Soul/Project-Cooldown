@@ -1,3 +1,9 @@
+# **v25-05-19**
+
+## Additions
+- Linear interpolation for your Krono amount in the bottom status bar.
+- The Settings menu where you can change the theme and toggle.
+
 # **v25-05-18.p1**
 
 ## Additions

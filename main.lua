@@ -1,4 +1,5 @@
 function love.load()
+    settings = love.graphics.newImage("images/settings.png")
     modifier_frame = love.graphics.newImage("images/modifier_frame.png")
     modifier_frame_neon = love.graphics.newImage("images/modifier_frame_neon.png")
     modifier_frame_basalt = love.graphics.newImage("images/modifier_frame_basalt.png")
@@ -32,7 +33,7 @@ function love.load()
     require "savefile"
     savefile.read()
     require "themes"
-    themes.set("basalt")
+    themes.set("sunset")
     kronoButtons = {}
     createKronoButton({520, 10}, 1, 15, player.kronoButtonsCooldowns[1], 0) -- 0.0(6) Krono/s
     createKronoButton({520, 50}, 6, 45, player.kronoButtonsCooldowns[2], 2) -- 0.1(3) Krono/s
@@ -40,6 +41,7 @@ function love.load()
     createKronoButton({520, 130}, 264, 480, player.kronoButtonsCooldowns[4], 12) -- 0.55 Krono/s
     createKronoButton({520, 170}, 1168, 1320, player.kronoButtonsCooldowns[5], 20) -- 0.8(84) Krono/s
     require "modifiers"
+    interpolatedKrono = player.krono
     updateModifierBoosts()
 end
 
@@ -85,6 +87,8 @@ function math.pfloor(n, precision)
     return tostring(rounded)
 end
 
+function lerp(a,b,t) return a * (1-t) + b * t end
+
 function createKronoButton(position, kronoGain, cooldown, cooldownTimer, unlockRank)
     local _ = {}
     _.position = position
@@ -129,6 +133,7 @@ function love.draw()
             love.graphics.printf("Next button unlocks at Rank " .. v.unlockRank, 520, v.position[2], 240, "center")
         end
     end
+    love.graphics.draw(settings, 398, 678)
     love.graphics.setFont(Exo2_16R)
     love.graphics.setHexColor(themeColors[player.theme].bottomStatusBar)
     love.graphics.rectangle("fill", 440, 640, 400, 85, 4, 4)
@@ -137,8 +142,8 @@ function love.draw()
     love.graphics.setHexColor(themeColors[player.theme].kronoProgressBar, 128/255)
     love.graphics.rectangle("fill", 445, 649, 390, 20, 2, 2)
     love.graphics.setHexColor(themeColors[player.theme].kronoProgressBar)
-    local progressRounding = (math.floor(390 * (player.krono / rankRequirements[player.rank + 1])) > 6) and 3 or 0
-    love.graphics.rectangle("fill", 445, 649, math.floor(390 * (player.krono / rankRequirements[player.rank + 1])), 20, progressRounding, progressRounding)
+    local progressRounding = (math.floor(390 * (interpolatedKrono / rankRequirements[player.rank + 1])) > 6) and 3 or 0
+    love.graphics.rectangle("fill", 445, 649, math.floor(390 * (interpolatedKrono / rankRequirements[player.rank + 1])), 20, progressRounding, progressRounding)
     love.graphics.setHexColor("ffffff")
     love.graphics.setLineStyle("rough")
     love.graphics.line(445, 645, 445, 673)
@@ -258,6 +263,38 @@ function love.draw()
         love.graphics.setFont(Exo2_12R)
         love.graphics.printf("Discarded modifiers can't be restored", 440, 480, 400, "center")
     end
+    if player.menu.settings then
+        love.graphics.setColor(0/255, 0/255, 0/255, 170/255)
+        love.graphics.rectangle("fill", 0, 0, 1280, 720)
+        love.graphics.setHexColor("ffffff")
+        love.graphics.setFont(Exo2_24M)
+        love.graphics.printf("Settings", 0, 235, 1280, "center")
+        love.graphics.setHexColor("700000")
+        love.graphics.rectangle("fill", 490, 270, 300, 100, 4, 4)
+        love.graphics.setHexColor("ffffff")
+        love.graphics.rectangle("line", 490, 270, 300, 100, 4, 4)
+        love.graphics.setFont(Exo2_16R)
+        love.graphics.print("Theme", 498, 282)
+        love.graphics.print("Krono Lerp", 498, 336)
+        love.graphics.setHexColor("d10000")
+        love.graphics.rectangle("fill", 690, 280, 90, 24, 2, 2)
+        love.graphics.setHexColor("ffffff", 128/255)
+        love.graphics.rectangle("line", 690, 280, 90, 24, 2, 2)
+        love.graphics.setHexColor("ffffff")
+        love.graphics.printf((tostring(player.theme)):sub(1, 1):upper() .. (tostring(player.theme)):sub(2, -1), 690, 281, 90, "center")
+        love.graphics.setHexColor("d10000")
+        love.graphics.rectangle("fill", 740, 335, 40, 24, 2, 2)
+        love.graphics.setHexColor("ffffff", 128/255)
+        love.graphics.rectangle("line", 740, 335, 40, 24, 2, 2)
+        love.graphics.setHexColor("ffffff")
+        love.graphics.printf(player.KronoLerp and "ON" or "OFF", 740, 336, 40, "center")
+        love.graphics.setHexColor("d10000")
+        love.graphics.rectangle("fill", 550, 380, 180, 28, 3, 3)
+        love.graphics.setHexColor("ffffff")
+        love.graphics.rectangle("line", 550, 380, 180, 28, 3, 3)
+        love.graphics.setFont(Exo2_16R)
+        love.graphics.printf("Exit", 550, 383, 180, "center")
+    end
     love.graphics.setHexColor("ffffff")
 end
 
@@ -272,6 +309,12 @@ function love.update(dt)
     if player.modifier.assemblyCooldown > 0 then
         player.modifier.assemblyCooldown = math.max(0, player.modifier.assemblyCooldown - dt)
     end
+    if interpolatedKrono ~= player.krono and player.KronoLerp then
+        local kronoGap = player.krono - interpolatedKrono
+        interpolatedKrono = interpolatedKrono + (kronoGap / 40) + 1
+    else
+        interpolatedKrono = player.krono
+    end
 end
 
 function love.mousepressed(x, y, button)
@@ -284,6 +327,10 @@ function love.mousepressed(x, y, button)
                 player.rank = player.rank + 1
             end
         end
+    end
+    love.graphics.draw(settings, 398, 678)
+    if x >= 398 and x <= 430 and y >= 678 and y <= 710 and not player.menu.modifierDrawn then
+        player.menu.settings = true
     end
     if x >= 926 and x <= 1166 and y >= 120 and y <= 170 and player.rank >= 11 and player.modifier.assemblyCooldown <= 0 and not player.menu.modifierDrawn then
         if player.modifier.openOnNextClick then
@@ -312,11 +359,27 @@ function love.mousepressed(x, y, button)
             player.menu.modifierDrawn = false
         end
     end
+    if player.menu.settings then
+        if x >= 690 and x <= 780 and y >= 280 and y <= 304 then
+            if player.theme == "sunset" then player.theme = "neon"
+            elseif player.theme == "neon" then player.theme = "basalt"
+            elseif player.theme == "basalt" then player.theme = "sunset"
+            end
+        end
+        if x >= 740 and x <= 780 and y >= 335 and y <= 359 then
+            player.KronoLerp = not player.KronoLerp
+        end
+        if x >= 550 and x <= 730 and y >= 380 and y <= 408 then
+            player.menu.settings = false
+        end
+    end
 end
 
 function love.keypressed(key)
     if key == "escape" and player.menu.modifierDrawn then
         player.menu.modifierDrawn = false
+    elseif key == "escape" and player.menu.settings then
+        player.menu.settings = false
     end
 end
 

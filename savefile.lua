@@ -13,9 +13,11 @@ function savefile.read()
         player.modifier.assemblyCooldown = data.modifier.assemblyCooldown or 0
         player.modifier.openOnNextClick = data.modifier.openOnNextClick or false
         player.menu = {
-            modifierDrawn = false
+            modifierDrawn = false,
+            settings = false
         }
         player.theme = data.theme or "sunset"
+        player.KronoLerp = data.lerp or false
     else
         player.krono = 0
         player.kronoButtonsCooldowns = {0, 0, 0, 0, 0}
@@ -27,9 +29,11 @@ function savefile.read()
         player.modifier.assemblyCooldown = 0
         player.modifier.openOnNextClick = false
         player.menu = {
-            modifierDrawn = false
+            modifierDrawn = false,
+            settings = false
         }
         player.theme = "sunset"
+        player.KronoLerp = false
     end
 end
 
@@ -46,6 +50,7 @@ function savefile.write()
     data.modifier.assemblyCooldown = player.modifier.assemblyCooldown
     data.modifier.openOnNextClick = player.modifier.openOnNextClick
     data.theme = player.theme
+    data.KronoLerp = player.KronoLerp
     serialized = lume.serialize(data)
     love.filesystem.write("SAVEFILE.sav", serialized)
 end
